@@ -23,7 +23,9 @@ from interpretar import shap_global, permutacao
 
 warnings.filterwarnings("ignore")  # mesmos avisos repetidos do experimento.py
 OUT = "resultados/interpretacao"
+FIG_SHAP = "resultados/figuras/shap"  # um gráfico por projeto; o texto usa só o do Hadoop
 os.makedirs(OUT, exist_ok=True)
+os.makedirs(FIG_SHAP, exist_ok=True)
 
 
 def projeto(proj):
@@ -50,10 +52,12 @@ def projeto(proj):
             for k, a in enumerate(amostra.columns):
                 c = np.corrcoef(amostra[a], vals[:, k])[0, 1] if amostra[a].std() > 0 else np.nan
                 linhas.append({"projeto": proj, "modelo": nome, "metodo": "shap_direcao", "atributo": a, "importancia": c})
-            if nome == "RF" and proj == "hadoop":
+            if nome == "RF":
                 shap.summary_plot(vals, amostra, show=False, plot_size=(7, 4.5))
-                plt.title("SHAP do Random Forest, Hadoop (última janela)")
-                plt.tight_layout(); plt.savefig("resultados/figuras/fig_shap_hadoop_rf.png", dpi=200); plt.close()
+                plt.title(f"SHAP do Random Forest, {proj.capitalize()} (última janela)")
+                plt.tight_layout()
+                plt.savefig(f"{FIG_SHAP}/fig_shap_{proj}_rf.png", dpi=200)
+                plt.close()
     pd.DataFrame(linhas).to_csv(f"{OUT}/{proj}.csv", index=False)
     print(proj, "ok, teste a partir de", pd.Timestamp(T, unit="s").date())
 

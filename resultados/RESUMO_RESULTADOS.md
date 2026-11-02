@@ -111,7 +111,7 @@ conclusões.
 - Conclusão: o risco é dominado pelo tamanho e pela difusão da mudança, de forma
   estável entre projetos, o que conversa com Zeng et al. (2021), em que o LApredict
   usa só `la`.
-- Figuras: `fig_ranking_atributos_rl.png`, `fig_shap_hadoop_rf.png`. Tabelas:
+- Figuras: `fig_ranking_atributos_rl.png`, `shap/fig_shap_hadoop_rf.png`. Tabelas:
   `etapa8_estabilidade_top3.csv`, `etapa8_direcao_shap.csv`.
 
 ## Limitações a discutir
