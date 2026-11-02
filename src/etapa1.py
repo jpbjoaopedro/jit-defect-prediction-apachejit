@@ -1,5 +1,5 @@
 import pandas as pd
-from dados import carregar, anexar_descoberta
+from dados import carregar, anexar_descoberta, periodo_estudo
 
 df = carregar()
 
@@ -23,3 +23,7 @@ print("latências negativas:", (ind["latencia_dias"] < 0).sum())
 lat = ind.groupby("project")["latencia_dias"].median().sort_values()
 print("mediana da latência (dias) por projeto:\n", lat.round(1))
 lat.to_csv("resultados/etapa1_latencia.csv")
+
+# recorte usado no experimento
+est = periodo_estudo(df)
+print(f"recorte do estudo: {len(est)} commits, {est['buggy'].sum()} indutores ({est['buggy'].mean():.4f})")
