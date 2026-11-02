@@ -17,15 +17,19 @@ from atributos import ATRIBUTOS, transformar, remover_correlacionados
 from modelos import modelos, escore_tamanho, lapredict
 from metricas import limiar_por_mcc, estatisticas, esforco
 
+# Os avisos se repetem a cada janela e enterram o progresso no terminal.
+# A convergência da regressão logística foi conferida numa rodada sem este filtro.
 warnings.filterwarnings("ignore")
+FRACAO_VALIDACAO = 0.2  # parte mais recente do treino, usada só para escolher hiperparâmetros e limiar
 GRADE = {"RL": [{"logisticregression__C": c} for c in (0.1, 1, 10)],
          "RF": [{"min_samples_leaf": m} for m in (1, 5, 10)],
          "LGBM": [{"num_leaves": n} for n in (15, 31, 63)]}
 
 
 def ajustar(base, grade, X_fit, y_fit, X_val, y_val):
-    """Escolhe hiperparâmetros e limiar na validação temporal; devolve (params, limiar)."""
+    """Escolhe hiperparâmetros pela AUC-PR na validação temporal; devolve (params, limiar por MCC)."""
     if y_val.sum() == 0 or y_fit.sum() == 0:
+        # Sem indutores não há o que comparar: fica o valor do meio da grade e o limiar neutro.
         return grade[len(grade) // 2], 0.5
     melhor, melhor_ap, melhor_p = None, -1, None
     for params in grade:
@@ -37,11 +41,33 @@ def ajustar(base, grade, X_fit, y_fit, X_val, y_val):
 
 
 def avaliar(y, p, limiar, teste):
-    linha = estatisticas(y, p, limiar) if limiar is not None else {}
+    """Métricas de classificação e de esforço, com o ranking pela probabilidade e pela densidade."""
+    linha = estatisticas(y, p, limiar)
     la, ld = teste["la"].values, teste["ld"].values
     linha.update(esforco(y, p, la, ld))
-    # ranking por densidade de risco (risco / esforço), como nos modelos sensíveis ao esforço de Kamei et al. (2013)
+    # Ordenar só pela probabilidade põe os commits grandes na frente e gasta o esforço neles;
+    # a densidade (risco por linha) segue os modelos sensíveis ao esforço de Kamei et al. (2013).
     linha.update({k + "_dens": v for k, v in esforco(y, p / (la + ld + 1), la, ld).items()})
+    return linha
+
+
+def avaliar_lapredict(X_tr, X_te, y_tr, corte, teste):
+    """Linha de base LApredict: limiar escolhido na validação, como nos outros modelos."""
+    la_tr, la_te = X_tr[["la"]], X_te[["la"]]
+    y_fit, y_val = y_tr[:corte], y_tr[corte:]
+    limiar = 0.5
+    if y_fit.sum() and y_val.sum():
+        p_val = lapredict().fit(la_tr.iloc[:corte], y_fit).predict_proba(la_tr.iloc[corte:])[:, 1]
+        limiar = limiar_por_mcc(y_val, p_val)
+    p = lapredict().fit(la_tr, y_tr).predict_proba(la_te)[:, 1]
+    return avaliar(teste["y"].values, p, limiar, teste)
+
+
+def avaliar_tamanho(teste):
+    """Linha de base por tamanho: é um ranking, não uma probabilidade, então não tem limiar nem Brier."""
+    y, s = teste["y"].values, escore_tamanho(teste).values
+    linha = {"auc_roc": roc_auc_score(y, s), "auc_pr": average_precision_score(y, s)}
+    linha.update(esforco(y, s, teste["la"].values, teste["ld"].values))
     return linha
 
 
@@ -57,7 +83,7 @@ def rodar(projeto, w_dias=90, so=None):
         saida = []
         X_tr, X_te = transformar(tr[ATRIBUTOS]), transformar(te[ATRIBUTOS])
         cols = remover_correlacionados(X_tr)
-        corte = int(len(tr) * 0.8)            # últimos 20% do treino (por data) = validação
+        corte = int(len(tr) * (1 - FRACAO_VALIDACAO))  # o treino já vem em ordem de data
         X_fit, X_val = X_tr.iloc[:corte][cols], X_tr.iloc[corte:][cols]
         y_tr, y_te = tr["y"].values, te["y"].values
         y_fit, y_val = y_tr[:corte], y_tr[corte:]
@@ -76,22 +102,9 @@ def rodar(projeto, w_dias=90, so=None):
             saida.append({**base_info, "modelo": nome, "params": str(params),
                           **avaliar(y_te, p, limiar, te)})
 
-        # LApredict: regressão logística só com log(1 + la)
-        la_tr, la_te = X_tr[["la"]], X_te[["la"]]
-        lim = 0.5
-        if y_fit.sum() and y_val.sum():
-            pv = lapredict().fit(la_tr.iloc[:corte], y_fit).predict_proba(la_tr.iloc[corte:])[:, 1]
-            lim = limiar_por_mcc(y_val, pv)
-        p = lapredict().fit(la_tr, y_tr).predict_proba(la_te)[:, 1]
-        saida.append({**base_info, "modelo": "LApredict", **avaliar(y_te, p, lim, te)})
-
-        # tamanho: ranking não supervisionado, sem probabilidade calibrada (só métricas de ranking e esforço)
-        s = escore_tamanho(te).values
-        linha = {"auc_roc": roc_auc_score(y_te, s),
-                 "auc_pr": average_precision_score(y_te, s)}
-        linha.update(esforco(y_te, s, te["la"].values, te["ld"].values))
-        saida.append({**base_info, "modelo": "Tamanho", **linha})
-        # grava janela a janela para poder retomar
+        saida.append({**base_info, "modelo": "LApredict", **avaliar_lapredict(X_tr, X_te, y_tr, corte, te)})
+        saida.append({**base_info, "modelo": "Tamanho", **avaliar_tamanho(te)})
+        # Grava janela a janela: uma rodada longa interrompida retoma de onde parou.
         pd.DataFrame(saida).to_csv(arq, mode="a", header=not os.path.exists(arq), index=False)
     return pd.read_csv(arq)
 
