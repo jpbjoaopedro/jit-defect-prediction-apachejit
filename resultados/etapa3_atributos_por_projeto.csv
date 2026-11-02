@@ -1,0 +1,13 @@
+projeto,mantidos,removidos
+camel,fix la ld ns ent age nuc aexp asexp,nf nd ndev arexp
+hadoop,fix la ld nd ns age nuc aexp asexp,nf ent ndev arexp
+ignite,fix la ld nd ns age nuc aexp,nf ent ndev arexp asexp
+flink,fix la ld nd ns age nuc aexp asexp,nf ent ndev arexp
+hbase,fix la ld nd ndev age nuc aexp asexp,nf ns ent arexp
+cassandra,fix la ld ent age nuc aexp asexp,nf nd ns ndev arexp
+hive,fix la ld ent age nuc aexp asexp,nf nd ns ndev arexp
+groovy,fix la ld nd ns age nuc aexp,nf ent ndev arexp asexp
+activemq,fix la ld nd ns age nuc aexp asexp,nf ent ndev arexp
+kafka,fix la ns age nuc aexp asexp,ld nf nd ent ndev arexp
+spark,fix la ld ns ent ndev age aexp asexp,nf nd nuc arexp
+zeppelin,fix la ld age nuc aexp asexp,nf nd ns ent ndev arexp
