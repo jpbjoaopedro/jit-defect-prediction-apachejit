@@ -1,4 +1,4 @@
-# Resumo dos resultados (etapas 1 a 8)
+# Resumo dos resultados (etapas 1 a 9)
 
 Gerado em 02/11/2026 e refeito depois da revisão de código (ordenação
 determinística dos commits com a mesma data). Execução: Python 3.10, scikit-learn 1.7.2, pandas 2.3.3,
@@ -111,8 +111,57 @@ conclusões.
 - Conclusão: o risco é dominado pelo tamanho e pela difusão da mudança, de forma
   estável entre projetos, o que conversa com Zeng et al. (2021), em que o LApredict
   usa só `la`.
-- Figuras: `fig_ranking_atributos_rl.png`, `shap/fig_shap_hadoop_rf.png`. Tabelas:
-  `etapa8_estabilidade_top3.csv`, `etapa8_direcao_shap.csv`.
+- Figuras: `fig_ranking_atributos_rl.png`, `shap/fig_shap_hadoop_rf.png` (há um por
+  projeto em `figuras/shap/`). Tabelas: `etapa8_estabilidade_top3.csv`,
+  `etapa8_direcao_shap.csv`.
+
+## 9. Ferramenta e validação funcional
+
+- Curva de esforço de exemplo: `fig_curva_esforco_hadoop.png`, última janela do
+  Hadoop (abril a setembro de 2018, 1.033 commits, só 27 indutores). Nessa janela o
+  Tamanho (Recall@20% = 0,78) supera a RL por densidade (0,52); a RL por
+  probabilidade fica em 0,22, perto do aleatório. Na média das 150 janelas a RL por
+  densidade fica à frente (0,608 contra 0,589), então a figura mostra a variação entre
+  janelas e não o caso típico. A taxa de 2,6% de indutores ilustra a censura à direita
+  nas janelas de 2018.
+- Modelo da ferramenta (`modelos/modelo_rl.joblib`): RL treinada uma vez com os 12
+  projetos juntos, regra de latência com corte em 01/01/2019 e W = 90. São 80.267
+  commits, 23.070 indutores, C = 10 e limiar 0,53 escolhidos nos 20% mais recentes.
+  Ficam 9 atributos depois da remoção de redundâncias (saem nf, nd, ndev e arexp). Os
+  maiores coeficientes, já padronizados, são la (0,93), fix (0,85) e ld (0,35).
+- A explicação de cada alerta é coeficiente x valor padronizado (log-odds em relação
+  a um commit médio). Num modelo linear isso coincide com o SHAP; o teste
+  `tests/teste_ferramenta.py` confere que as contribuições somam ao logit da
+  probabilidade.
+- Validação funcional em 50 commits do ZooKeeper (semente 42), projeto que ficou fora
+  do treino (`etapa9_validacao.csv`). As definições de nd e age foram acertadas antes,
+  em outros 20 commits do ZooKeeper.
+
+| Atributo | Igual ao ApacheJIT | Até 1% de diferença |
+|---|---|---|
+| la, ld, nf | 100% | 100% |
+| nd, ns | 98% | 98% |
+| ent | 94% | 94% |
+| age | 90% | 90% |
+| aexp | 86% | 86% |
+| arexp | 82% | 86% |
+| fix | 76% | 76% |
+| nuc | 14% | 46% |
+| asexp | 26% | 26% |
+| ndev | 10% | 10% |
+
+- Por que divergem: `fix` no ApacheJIT vem da ligação com o Jira, e a ferramenta só
+  tem a mensagem do commit (5 falsos positivos e 7 falsos negativos em 50). `ndev`,
+  `nuc` e `asexp` dependem de como o ApacheJIT conta autores e mudanças anteriores,
+  e o código que gerou essas métricas não está no pacote de replicação; os valores
+  de `asexp` no CSV (por exemplo 8,9e-11) indicam uma definição diferente da de Kamei.
+  Desses, só `nuc` e `asexp` entram no modelo, com coeficientes pequenos (0,20 e -0,04).
+- Na amostra, 23 dos 50 commits são indutores. O risco médio foi 0,47 nos indutores e
+  0,28 nos limpos (AUC-ROC 0,73, só indicativo com n = 50).
+- Exemplos de explicação: `fig_waterfall_indutor.png` (risco 96%) e
+  `fig_waterfall_alarme_falso.png` (risco 81%). Nos dois a ferramenta marcou `fix` = 1
+  e o ApacheJIT tem 0. Como `fix` é o segundo atributo de maior peso, o erro de
+  aproximação dele é a principal limitação prática da ferramenta.
 
 ## Limitações a discutir
 
@@ -124,3 +173,5 @@ conclusões.
   A comparação continua justa para medir o otimismo, mas isso precisa ser dito no
   texto.
 - Os resultados vêm só de projetos Java da Apache.
+- A ferramenta é prova de conceito: o modelo é agrupado (os experimentos são por
+  projeto), `fix` é aproximado pela mensagem e não houve avaliação com usuários.
