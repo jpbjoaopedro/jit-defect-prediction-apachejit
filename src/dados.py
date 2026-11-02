@@ -12,7 +12,8 @@ def carregar(caminho="data/apachejit_total.csv"):
     })
     df["fix"] = df["fix"].astype(int)
     df["buggy"] = df["buggy"].astype(int)
-    return df.sort_values("author_date").reset_index(drop=True)
+    # 1.155 commits empatam na data; desempatar pelo hash deixa a ordem igual em qualquer versão do pandas
+    return df.sort_values(["author_date", "commit_id"], kind="mergesort").reset_index(drop=True)
 
 def anexar_descoberta(df, pasta="data/links"):
     """Data de descoberta = primeira correção ligada ao commit indutor."""
