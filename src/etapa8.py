@@ -21,15 +21,16 @@ from atributos import ATRIBUTOS, transformar, remover_correlacionados
 from modelos import modelos
 from interpretar import shap_global, permutacao
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")  # mesmos avisos repetidos do experimento.py
 OUT = "resultados/interpretacao"
 os.makedirs(OUT, exist_ok=True)
 
 
 def projeto(proj):
+    """Reajusta os três modelos na última janela, com os hiperparâmetros já escolhidos, e explica."""
     df = periodo_estudo(anexar_descoberta(carregar()))
     g = df[df["project"] == "apache/" + proj]
-    T, tr, te = list(janelas(g))[-1]                      # última janela de teste
+    T, tr, te = list(janelas(g))[-1]  # última janela de teste
     X_tr, X_te = transformar(tr[ATRIBUTOS]), transformar(te[ATRIBUTOS])
     cols = remover_correlacionados(X_tr)
     met = pd.read_csv("resultados/metricas_w90.csv")
@@ -44,7 +45,8 @@ def projeto(proj):
             imp, vals, amostra = shap_global(m, X_te[cols], n=500)
             linhas += [{"projeto": proj, "modelo": nome, "metodo": "shap", "atributo": a, "importancia": v}
                        for a, v in imp.items()]
-            # direção do efeito: correlação entre o valor do atributo e o seu valor SHAP
+            # A importância SHAP não tem sinal; a correlação entre valor do atributo e SHAP diz
+            # se valores altos aumentam (+) ou reduzem (-) o risco previsto.
             for k, a in enumerate(amostra.columns):
                 c = np.corrcoef(amostra[a], vals[:, k])[0, 1] if amostra[a].std() > 0 else np.nan
                 linhas.append({"projeto": proj, "modelo": nome, "metodo": "shap_direcao", "atributo": a, "importancia": c})
@@ -57,6 +59,7 @@ def projeto(proj):
 
 
 def resumo():
+    """Estabilidade do top-3 entre projetos, direção dos efeitos e mapa de ranking da RL."""
     r = pd.concat([pd.read_csv(f) for f in glob.glob(f"{OUT}/*.csv")])
     imp = r[r.metodo.isin(["shap", "permutacao"])].copy()
     imp["rank"] = imp.groupby(["projeto", "modelo", "metodo"])["importancia"].rank(ascending=False)
@@ -72,7 +75,6 @@ def resumo():
     dire.to_csv("resultados/etapa8_direcao_shap.csv")
     print(dire.to_string())
 
-    # mapa de calor: ranking do atributo (permutação, RL) por projeto
     rl = imp[(imp.modelo == "RL") & (imp.metodo == "permutacao")].pivot(index="atributo", columns="projeto", values="rank")
     rl = rl.loc[rl.mean(axis=1).sort_values().index]
     fig, ax = plt.subplots(figsize=(10, 5))

@@ -12,9 +12,11 @@ def transformar(X):
     return X
 
 def remover_correlacionados(X, limiar_rho=0.7, limiar_vif=5.0):
-    """Versão do AutoSpearman: Spearman e depois VIF.
-    Confira os limiares no artigo de Jiarpakdee, Tantithamthavorn e Treude (2018)
-    antes de descrever o procedimento no texto."""
+    """Devolve as colunas que sobram após tirar redundâncias, inspirado no AutoSpearman.
+
+    Passo 1: enquanto algum par tiver |rho de Spearman| >= limiar_rho, sai um dos dois.
+    Passo 2: enquanto o maior VIF for >= limiar_vif, sai o atributo com esse VIF.
+    """
     cols = list(X.columns)
     while True:
         rho = X[cols].corr(method="spearman").abs().fillna(0)   # atributo constante na janela dá NaN
@@ -23,7 +25,7 @@ def remover_correlacionados(X, limiar_rho=0.7, limiar_vif=5.0):
             break
         i, j = np.unravel_index(rho.values.argmax(), rho.shape)
         a, b = cols[i], cols[j]
-        # sai a métrica do par que tem maior correlação média com as demais
+        # Do par, sai quem mais se sobrepõe ao resto: o outro carrega a informação com menos redundância.
         sai = a if rho[a].mean() >= rho[b].mean() else b
         cols.remove(sai)
     while len(cols) > 2:

@@ -13,7 +13,7 @@ assert (r.groupby(["projeto", "inicio_teste"]).size() == 5).all(), "janela incom
 r.to_csv("resultados/metricas_w90.csv", index=False)
 SUP = ["RL", "RF", "LGBM", "LApredict"]
 
-# esforço: supervisionados ordenados por densidade de risco; "Tamanho" já é um ranking por tamanho
+# "Tamanho" não tem colunas _dens: ordenar por 1/tamanho já dá o mesmo ranking que a densidade daria.
 for m in ["recall20", "pci20", "ifa", "popt"]:
     r[m + "_rank"] = r[m + "_dens"].where(r["modelo"] != "Tamanho", r[m])
 
@@ -27,22 +27,21 @@ proj = r.pivot_table(index="projeto", columns="modelo", values="auc_pr").round(3
 proj["prevalencia_teste"] = (r["pos_teste"] / r["n_teste"]).groupby(r["projeto"]).mean().round(3)
 proj.to_csv("resultados/etapa6_auc_pr_por_projeto.csv")
 
-# Wilcoxon pareado nas mesmas janelas, com delta de Cliff como tamanho de efeito
-def par(metrica, a, b):
+# Pareado por janela porque cada janela tem dificuldade própria; o delta de Cliff diz se a diferença importa.
+def comparar_pareado(metrica, a, b):
     x = r[r.modelo == a].set_index(["projeto", "inicio_teste"])[metrica]
     y = r[r.modelo == b].set_index(["projeto", "inicio_teste"])[metrica].reindex(x.index)
     return {"metrica": metrica, "a": a, "b": b, "media_a": x.mean(), "media_b": y.mean(),
             **comparar(x.values, y.values)}
 
-testes = [par(m, a, b) for m in ["auc_pr", "auc_roc", "mcc", "brier"]
+testes = [comparar_pareado(m, a, b) for m in ["auc_pr", "auc_roc", "mcc", "brier"]
           for a, b in itertools.combinations(SUP, 2)]
-testes += [par(m, a, "Tamanho") for m in ["recall20_rank", "popt_rank", "ifa_rank", "pci20_rank"]
+testes += [comparar_pareado(m, a, "Tamanho") for m in ["recall20_rank", "popt_rank", "ifa_rank", "pci20_rank"]
            for a in SUP]
 t = pd.DataFrame(testes).round(4)
 t.to_csv("resultados/etapa6_testes.csv", index=False)
 print(t.to_string(index=False))
 
-# Figuras
 ordem = ["RL", "RF", "LGBM", "LApredict", "Tamanho"]
 fig, ax = plt.subplots(1, 2, figsize=(11, 4))
 ax[0].boxplot([r.loc[r.modelo == m, "auc_pr"] for m in ordem])

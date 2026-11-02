@@ -42,7 +42,7 @@ ax.set(ylabel="Dias até a correção (escala log)", title="Latência de descobe
 ax.legend(loc="upper left")
 fig.tight_layout(); fig.savefig(f"{FIG}/fig_latencia_por_projeto.png", dpi=200); plt.close(fig)
 
-# tabela de projetos e critério de seleção
+# Critério de inclusão: volume para treinar e pelo menos duas janelas para ver variação no tempo.
 linhas = []
 for p, g in est.groupby("project"):
     datas = pd.to_datetime(g["author_date"], unit="s")

@@ -13,10 +13,11 @@ from dados import carregar, anexar_descoberta, periodo_estudo
 from atributos import ATRIBUTOS, transformar, remover_correlacionados
 from modelos import modelos, SEED
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")  # mesmos avisos repetidos do experimento.py
 proj = sys.argv[1]
 df = periodo_estudo(anexar_descoberta(carregar()))
-# mesmo período do walk-forward (até 2018), mas com o rótulo final: é assim que a validação ingênua costuma ser feita
+# Mesmo período do walk-forward (até 2018), porém com o rótulo final e partições sem ordem temporal.
+# A diferença entre as duas avaliações é o otimismo que se quer medir.
 g = df[(df["project"] == "apache/" + proj) & (df["author_date"] < pd.Timestamp("2019-01-01").timestamp())]
 X, y = transformar(g[ATRIBUTOS]), g["buggy"].values
 linhas = []
