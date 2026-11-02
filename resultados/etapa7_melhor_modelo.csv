@@ -2,12 +2,12 @@ projeto,melhor_cv,melhor_wf
 activemq,RF,RL
 camel,RF,RL
 cassandra,RF,RL
-flink,LGBM,RL
+flink,LGBM,RF
 groovy,RF,RL
-hadoop,LGBM,RF
+hadoop,LGBM,RL
 hbase,RF,RL
 hive,RF,RF
-ignite,LGBM,RL
+ignite,RF,RL
 kafka,RF,RL
 spark,RF,RL
 zeppelin,LGBM,RL

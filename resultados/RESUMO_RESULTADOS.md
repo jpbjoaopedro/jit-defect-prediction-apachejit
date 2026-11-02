@@ -1,6 +1,7 @@
 # Resumo dos resultados (etapas 1 a 8)
 
-Gerado em 02/11/2026. Execução: Python 3.10, scikit-learn 1.7.2, pandas 2.3.3,
+Gerado em 02/11/2026 e refeito depois da revisão de código (ordenação
+determinística dos commits com a mesma data). Execução: Python 3.10, scikit-learn 1.7.2, pandas 2.3.3,
 LightGBM 4.7.0, SHAP 0.49.1, semente 42. Rodar de novo no ambiente do
 `requirements.txt` (Python 3.14) pode mudar as casas decimais, mas não as
 conclusões.
@@ -36,13 +37,13 @@ conclusões.
 | Modelo | AUC-ROC | AUC-PR | MCC | Brier |
 |---|---|---|---|---|
 | Regressão logística | **0,823** | **0,717** | **0,417** | **0,162** |
-| Random Forest | 0,806 | 0,701 | 0,404 | 0,166 |
+| Random Forest | 0,807 | 0,703 | 0,407 | 0,166 |
 | LightGBM | 0,780 | 0,670 | 0,368 | 0,189 |
 | LApredict (só la) | 0,776 | 0,633 | 0,343 | 0,185 |
 
 - A RL supera RF, LightGBM e LApredict em AUC-PR com p < 0,001 (Wilcoxon pareado),
-  mas os efeitos são pequenos: delta de Cliff de 0,06 contra RF e 0,15 contra
-  LightGBM. Em MCC, RL e RF empatam (p = 0,28).
+  mas os efeitos são pequenos: delta de Cliff de 0,05 contra RF e 0,15 contra
+  LightGBM. Em MCC, RL e RF empatam (p = 0,56).
 - A AUC-PR da RL fica de 1,35 a 2,82 vezes acima da prevalência do teste e nunca
   abaixo dela, em nenhuma das 150 janelas. O Brier da RL (0,162) é melhor que o de
   um preditor ingênuo (0,198).
@@ -69,11 +70,12 @@ conclusões.
 | Modelo | AUC-ROC 10-fold | AUC-ROC walk-forward | Diferença | Diferença na AUC-PR |
 |---|---|---|---|---|
 | RL | 0,839 | 0,825 | +0,014 | +0,010 |
-| RF | 0,857 | 0,807 | +0,050 | +0,067 |
+| RF | 0,857 | 0,807 | +0,049 | +0,067 |
 | LightGBM | 0,853 | 0,781 | +0,072 | +0,093 |
 
 - O ranking dos modelos se inverte. Na validação cruzada, RF ou LightGBM vence em
-  11 de 12 projetos; no walk-forward, a RL vence em 10 de 12.
+  todos os 12 projetos (a RL nunca fica em primeiro); no walk-forward, a RL vence
+  em 10 de 12.
 - A diferença de AUC-ROC por projeto e modelo vai de -0,007 a +0,12, dentro da faixa
   de Falessi et al. (2020).
 - Figura: `fig_cv_vs_walkforward.png`. Tabelas: `etapa7_cv_vs_walkforward.csv`,
