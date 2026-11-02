@@ -35,7 +35,7 @@ def projeto(proj):
     met = pd.read_csv("resultados/metricas_w90.csv")
     linhas = []
     for nome, base in modelos().items():
-        prm = met[(met.projeto == proj) & (met.modelo == nome)].iloc[-1]["params"]
+        prm = met[(met.projeto == proj) & (met.modelo == nome)].sort_values("inicio_teste").iloc[-1]["params"]
         m = clone(base).set_params(**ast.literal_eval(prm)).fit(X_tr[cols], tr["y"].values)
         perm = permutacao(m, X_te[cols], te["y"].values)
         linhas += [{"projeto": proj, "modelo": nome, "metodo": "permutacao", "atributo": a, "importancia": v}

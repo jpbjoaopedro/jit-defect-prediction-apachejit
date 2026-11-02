@@ -9,6 +9,7 @@ from metricas import comparar
 
 r = pd.concat([pd.read_csv(f) for f in glob.glob("resultados/metricas/*_w90.csv")])
 assert not r.duplicated(["projeto", "inicio_teste", "modelo"]).any()
+assert (r.groupby(["projeto", "inicio_teste"]).size() == 5).all(), "janela incompleta no CSV"
 r.to_csv("resultados/metricas_w90.csv", index=False)
 SUP = ["RL", "RF", "LGBM", "LApredict"]
 
