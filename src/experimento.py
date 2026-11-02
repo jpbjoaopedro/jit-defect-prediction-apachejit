@@ -1,6 +1,6 @@
 """Etapas 4 a 6: walk-forward com latência, modelos, linhas de base e métricas.
 
-Uso: python src/experimento.py <projeto> [w_dias]
+Uso: python src/experimento.py <projeto> [w_dias] [modelos separados por vírgula]
 Grava resultados/metricas/<projeto>_w<w_dias>.csv (uma linha por janela e modelo).
 Retoma de onde parou: janelas já gravadas no CSV são puladas.
 """
@@ -45,7 +45,7 @@ def avaliar(y, p, limiar, teste):
     return linha
 
 
-def rodar(projeto, w_dias=90):
+def rodar(projeto, w_dias=90, so=None):
     df = periodo_estudo(anexar_descoberta(carregar()))
     g = df[df["project"] == "apache/" + projeto]
     os.makedirs("resultados/metricas", exist_ok=True)
@@ -68,6 +68,8 @@ def rodar(projeto, w_dias=90):
                      "atributos": " ".join(cols)}
 
         for nome, base in modelos().items():
+            if so and nome not in so:
+                continue
             params, limiar = ajustar(base, GRADE[nome], X_fit, y_fit, X_val, y_val)
             m = clone(base).set_params(**params).fit(X_tr[cols], y_tr)
             p = m.predict_proba(X_te[cols])[:, 1]
@@ -97,6 +99,7 @@ def rodar(projeto, w_dias=90):
 if __name__ == "__main__":
     proj = sys.argv[1]
     w = int(sys.argv[2]) if len(sys.argv) > 2 else 90
-    r = rodar(proj, w)
+    so = sys.argv[3].split(",") if len(sys.argv) > 3 else None
+    r = rodar(proj, w, so)
     print(proj, f"w={w}", "janelas:", r["inicio_teste"].nunique())
     print(r.groupby("modelo")[["auc_roc", "auc_pr", "mcc", "brier", "recall20", "popt", "ifa"]].mean().round(3))
