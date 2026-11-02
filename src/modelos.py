@@ -1,4 +1,3 @@
-import numpy as np
 from lightgbm import LGBMClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -8,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 SEED = 42
 
 def modelos():
+    """Um modelo linear, um ensemble por bagging e um por boosting, com semente fixa."""
     return {
         "RL": make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000)),
         "RF": RandomForestClassifier(n_estimators=300, min_samples_leaf=5,
