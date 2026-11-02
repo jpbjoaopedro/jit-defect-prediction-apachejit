@@ -24,6 +24,6 @@ def janelas(df, w_dias=90, teste_meses=6, min_hist_meses=6, teste_ate="2019-01-0
         assert treino["author_date"].max() < T
         assert not ((treino["y"] == 1) & (treino["discovery_date"] >= T)).any()
         assert not set(treino["commit_id"]) & set(teste["commit_id"])
-        if treino["y"].sum() >= 10 and teste["y"].sum() >= 5:
+        if treino["y"].sum() >= 10 and teste["y"].sum() >= 5 and (teste["y"] == 0).sum() >= 5:
             yield T, treino, teste
         T = fim

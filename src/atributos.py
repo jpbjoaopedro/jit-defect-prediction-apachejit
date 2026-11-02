@@ -17,7 +17,7 @@ def remover_correlacionados(X, limiar_rho=0.7, limiar_vif=5.0):
     antes de descrever o procedimento no texto."""
     cols = list(X.columns)
     while True:
-        rho = X[cols].corr(method="spearman").abs()
+        rho = X[cols].corr(method="spearman").abs().fillna(0)   # atributo constante na janela dá NaN
         np.fill_diagonal(rho.values, 0)
         if rho.values.max() < limiar_rho:
             break

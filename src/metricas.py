@@ -39,7 +39,7 @@ def esforco(y, escore, la, ld, corte=0.20):
         "recall20": ys[insp].sum() / max(ys.sum(), 1),
         "pci20": insp.mean(),
         "ifa": int(primeiro),           # falsos alarmes antes do 1º indutor
-        "popt": 1 - (a_ot - a_m) / (a_ot - a_pi),
+        "popt": 1 - (a_ot - a_m) / (a_ot - a_pi) if a_ot != a_pi else np.nan,
     }
 
 def delta_cliff(a, b):
