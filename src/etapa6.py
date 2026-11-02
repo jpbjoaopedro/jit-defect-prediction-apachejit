@@ -28,7 +28,7 @@ proj["prevalencia_teste"] = r.groupby("projeto").apply(
     lambda g: (g["pos_teste"] / g["n_teste"]).mean()).round(3)
 proj.to_csv("resultados/etapa6_auc_pr_por_projeto.csv")
 
-# Wilcoxon pareado (mesmas janelas) + delta de Cliff
+# Wilcoxon pareado nas mesmas janelas, com delta de Cliff como tamanho de efeito
 def par(metrica, a, b):
     x = r[r.modelo == a].set_index(["projeto", "inicio_teste"])[metrica]
     y = r[r.modelo == b].set_index(["projeto", "inicio_teste"])[metrica].reindex(x.index)

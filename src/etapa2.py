@@ -15,7 +15,7 @@ todos["ano"] = pd.to_datetime(todos["author_date"], unit="s").dt.year
 est = periodo_estudo(todos)
 nome = lambda p: p.replace("apache/", "")
 
-# --- Figura: taxa de indutores e latência por ano (justifica o recorte 2010-2018) ---
+# taxa de indutores e latência por ano: mostra por que o estudo usa 2010 a 2018
 por_ano = todos.groupby("ano").agg(taxa=("buggy", "mean"))
 por_ano["latencia_mediana"] = todos[todos["buggy"] == 1].groupby("ano")["latencia_dias"].median()
 por_ano.round(3).to_csv("resultados/etapa2_por_ano.csv")
@@ -29,7 +29,7 @@ for a in ax:
     a.set_xticks(range(2003, 2020, 2))
 fig.tight_layout(); fig.savefig(f"{FIG}/fig_taxa_latencia_por_ano.png", dpi=200); plt.close(fig)
 
-# --- Latência por projeto (2010-2017, sem os cortes da coleta) ---
+# latência por projeto, só 2010 a 2017 para fugir dos cortes da coleta
 ind = est[(est["buggy"] == 1) & (est["ano"] <= 2017)]
 ordem = ind.groupby("project")["latencia_dias"].median().sort_values().index
 fig, ax = plt.subplots(figsize=(10, 4.5))
@@ -42,7 +42,7 @@ ax.set(ylabel="Dias até a correção (escala log)", title="Latência de descobe
 ax.legend(loc="upper left")
 fig.tight_layout(); fig.savefig(f"{FIG}/fig_latencia_por_projeto.png", dpi=200); plt.close(fig)
 
-# --- Tabela de projetos e seleção ---
+# tabela de projetos e critério de seleção
 linhas = []
 for p, g in est.groupby("project"):
     datas = pd.to_datetime(g["author_date"], unit="s")

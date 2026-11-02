@@ -7,7 +7,7 @@ import pandas as pd
 
 MOD = ["RL", "RF", "LGBM"]
 
-# --- (a) 10-fold aleatório x walk-forward (W = 90) ---
+# (a) 10-fold aleatório contra walk-forward com W = 90
 cv = pd.concat([pd.read_csv(f) for f in glob.glob("resultados/cv/*.csv")])
 wf = pd.read_csv("resultados/metricas_w90.csv")
 a = cv.groupby(["projeto", "modelo"])[["auc_roc", "auc_pr"]].mean()
@@ -33,7 +33,7 @@ ax.set(xlabel="AUC-PR no walk-forward (W = 90)", ylabel="AUC-PR na validação c
        title="Validação aleatória x temporal (um ponto por projeto)")
 ax.legend(); fig.tight_layout(); fig.savefig("resultados/figuras/fig_cv_vs_walkforward.png", dpi=200); plt.close(fig)
 
-# --- (b) sensibilidade de W (regressão logística) ---
+# (b) sensibilidade de W, só com a regressão logística
 ws = []
 for w in (30, 90, 180, 365):
     r = pd.concat([pd.read_csv(f) for f in glob.glob(f"resultados/metricas/*_w{w}.csv")])
