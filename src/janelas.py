@@ -6,6 +6,17 @@ MES = 30.44 * DIA  # duração média do mês no calendário gregoriano
 MIN_INDUTORES_TREINO = 10
 MIN_POR_CLASSE_TESTE = 5
 
+def rotular_em(df, T, w_dias):
+    """Commits anteriores a T com o rótulo que se teria em T (regra de latência de Cabral et al., 2019)."""
+    hist = df[df["author_date"] < T]
+    descoberto = hist["discovery_date"].notna() & (hist["discovery_date"] < T)
+    antigo = hist["author_date"] < T - w_dias * DIA
+    # Commit recente sem correção ainda pode virar indutor: fica fora até completar W dias.
+    treino = hist[antigo | descoberto].copy()
+    treino["y"] = descoberto[antigo | descoberto].astype(int)
+    return treino
+
+
 def janelas(df, w_dias=90, teste_meses=6, min_hist_meses=6, teste_ate="2019-01-01"):
     """Gera (T, treino, teste) em janelas sucessivas: o treino acumula tudo antes de T.
 
@@ -16,15 +27,9 @@ def janelas(df, w_dias=90, teste_meses=6, min_hist_meses=6, teste_ate="2019-01-0
     t_ini = df["author_date"].min()
     t_fim = min(df["author_date"].max(), pd.Timestamp(teste_ate).timestamp())
     T = t_ini + min_hist_meses * MES + w_dias * DIA
-    W = w_dias * DIA
     while T + teste_meses * MES <= t_fim + 1:
         fim = T + teste_meses * MES
-        hist = df[df["author_date"] < T]
-        descoberto = hist["discovery_date"].notna() & (hist["discovery_date"] < T)
-        antigo = hist["author_date"] < T - W
-        # Commit recente sem correção ainda pode virar indutor: fica fora até completar W dias.
-        treino = hist[antigo | descoberto].copy()
-        treino["y"] = descoberto[antigo | descoberto].astype(int)
+        treino = rotular_em(df, T, w_dias)
         teste = df[(df["author_date"] >= T) & (df["author_date"] < fim)].copy()
         teste["y"] = teste["buggy"]  # o teste é julgado com o rótulo final, o que de fato aconteceu
         # Se alguma destas falhar, houve vazamento do futuro e nenhum resultado do estudo vale.
