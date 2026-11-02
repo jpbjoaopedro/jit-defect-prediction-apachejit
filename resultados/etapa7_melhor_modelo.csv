@@ -1,0 +1,13 @@
+projeto,melhor_cv,melhor_wf
+activemq,RF,RL
+camel,RF,RL
+cassandra,RF,RL
+flink,LGBM,RL
+groovy,RF,RL
+hadoop,LGBM,RF
+hbase,RF,RL
+hive,RF,RF
+ignite,LGBM,RL
+kafka,RF,RL
+spark,RF,RL
+zeppelin,LGBM,RL
