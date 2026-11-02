@@ -24,8 +24,7 @@ geral.to_csv("resultados/etapa6_resumo_modelos.csv")
 print(r.groupby("modelo")[METR].mean().round(3).T.to_string())
 
 proj = r.pivot_table(index="projeto", columns="modelo", values="auc_pr").round(3)
-proj["prevalencia_teste"] = r.groupby("projeto").apply(
-    lambda g: (g["pos_teste"] / g["n_teste"]).mean()).round(3)
+proj["prevalencia_teste"] = (r["pos_teste"] / r["n_teste"]).groupby(r["projeto"]).mean().round(3)
 proj.to_csv("resultados/etapa6_auc_pr_por_projeto.csv")
 
 # Wilcoxon pareado nas mesmas janelas, com delta de Cliff como tamanho de efeito
