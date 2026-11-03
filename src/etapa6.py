@@ -38,7 +38,12 @@ testes = [comparar_pareado(m, a, b) for m in ["auc_pr", "auc_roc", "mcc", "brier
           for a, b in itertools.combinations(SUP, 2)]
 testes += [comparar_pareado(m, a, "Tamanho") for m in ["recall20_rank", "popt_rank", "ifa_rank", "pci20_rank"]
            for a in SUP]
-t = pd.DataFrame(testes).round(4)
+t = pd.DataFrame(testes)
+# Holm sobre todas as comparações: são dezenas de testes, e sem ajuste algum p < 0,05 sairia por acaso.
+ordem = t["p_wilcoxon"].sort_values().index
+ajustado = (t.loc[ordem, "p_wilcoxon"] * (len(t) - pd.Series(range(len(t)), index=ordem))).cummax().clip(upper=1)
+t["p_holm"] = ajustado.reindex(t.index)
+t = t.round(4)
 t.to_csv("resultados/etapa6_testes.csv", index=False)
 print(t.to_string(index=False))
 
