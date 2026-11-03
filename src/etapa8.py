@@ -54,6 +54,10 @@ def projeto(proj):
                 linhas.append({"projeto": proj, "modelo": nome, "metodo": "shap_direcao", "atributo": a, "importancia": c})
             if nome == "RF":
                 shap.summary_plot(vals, amostra, show=False, plot_size=(7, 4.5))
+                eixo, barra = plt.gcf().axes[0], plt.gcf().axes[-1]
+                eixo.set_xlabel("Valor SHAP (efeito na saída do modelo)")
+                barra.set_ylabel("Valor do atributo")
+                barra.set_yticklabels(["Baixo", "Alto"])
                 plt.title(f"SHAP do Random Forest, {proj.capitalize()} (última janela)")
                 plt.tight_layout()
                 plt.savefig(f"{FIG_SHAP}/fig_shap_{proj}_rf.png", dpi=200)
