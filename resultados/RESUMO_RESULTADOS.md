@@ -44,6 +44,8 @@ conclusões.
 - A RL supera RF, LightGBM e LApredict em AUC-PR com p < 0,001 (Wilcoxon pareado),
   mas os efeitos são pequenos: delta de Cliff de 0,05 contra RF e 0,15 contra
   LightGBM. Em MCC, RL e RF empatam (p = 0,56).
+- Com a correção de Holm sobre as 40 comparações (`p_holm` em `etapa6_testes.csv`), todas as
+  diferenças significativas continuam significativas (RL x RF em AUC-PR: p ajustado 0,005).
 - A AUC-PR da RL fica de 1,35 a 2,82 vezes acima da prevalência do teste e nunca
   abaixo dela, em nenhuma das 150 janelas. O Brier da RL (0,162) é melhor que o de
   um preditor ingênuo (0,198).
@@ -162,6 +164,13 @@ conclusões.
   `fig_waterfall_alarme_falso.png` (risco 81%). Nos dois a ferramenta marcou `fix` = 1
   e o ApacheJIT tem 0. Como `fix` é o segundo atributo de maior peso, o erro de
   aproximação dele é a principal limitação prática da ferramenta.
+
+- Modelo da ferramenta no ZooKeeper inteiro (2010 a 2018, 437 commits, 50,6% indutores),
+  com os atributos do ApacheJIT (`etapa9_zookeeper.csv`): AUC-ROC 0,899, AUC-PR 0,910,
+  MCC 0,631, Brier 0,135, Recall@20% 0,64 com IFA 0, contra Recall@20% 0,63 e IFA 1 do
+  Tamanho. É avaliação entre projetos, não temporal: os outros 12 projetos cobrem o
+  mesmo período. A queda para AUC 0,73 nos 50 commits com atributos extraídos pela
+  ferramenta vem da extração, principalmente de `fix`.
 
 ## Limitações a discutir
 

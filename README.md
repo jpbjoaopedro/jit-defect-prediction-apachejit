@@ -34,7 +34,7 @@ Rode da raiz do repositório, nesta ordem. Os resultados vão para `resultados/`
 | 6. Consolidação e testes estatísticos | `python src/etapa6.py` e `python src/etapa6_curva.py` | `etapa6_*.csv`, boxplots, curva de esforço |
 | 7. Validação aleatória e sensibilidade de W | `python src/etapa7_cv.py <projeto>` para cada projeto, depois `python src/etapa7.py` | `etapa7_*.csv` |
 | 8. Interpretação | `python src/etapa8.py <projeto>` para cada projeto, depois `python src/etapa8.py --resumo` | `etapa8_*.csv`, figuras SHAP |
-| 9. Ferramenta | `python src/modelo_final.py` e `python src/validar_ferramenta.py <clone do zookeeper>` | `modelos/modelo_rl.joblib`, `etapa9_*.csv` |
+| 9. Ferramenta | `python src/modelo_final.py`, `python src/avaliar_zookeeper.py` e `python src/validar_ferramenta.py <clone do zookeeper>` | `modelos/modelo_rl.joblib`, `etapa9_*.csv` |
 
 O `experimento.py` grava janela a janela e, se for interrompido, continua de onde parou.
 Para a sensibilidade de W, rode `python src/experimento.py <projeto> 30 RL` (e 180, 365).
