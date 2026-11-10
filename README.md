@@ -25,6 +25,10 @@ Os dados não estão no repositório. Baixe o pacote do ApacheJIT no Zenodo e co
 
 Rode da raiz do repositório, nesta ordem. Os resultados vão para `resultados/`.
 
+Os arquivos em `resultados/` e o `modelos/modelo_rl.joblib` foram gerados com Python 3.10.12,
+scikit-learn 1.7.2, pandas 2.3.3, NumPy 2.2.6, LightGBM 4.7.0, SHAP 0.49.1 e PyDriller 2.12 (semente 42).
+O `requirements.txt` fixa versões mais recentes; com elas, as últimas casas decimais podem mudar.
+
 | Etapa | Comando | Saída principal |
 |---|---|---|
 | 1. Conferência e recorte | `python src/etapa1.py` | `etapa1_*.csv` |
